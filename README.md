@@ -36,8 +36,10 @@ services:
     environment:
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-    command: |
-      mlflow server --backend-store-uri postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}/${POSTGRES_DB} --artifacts-destination ${S3_ROOT} --host 0.0.0.0
+      - BACKEND_URI=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}/${POSTGRES_DB}
+    command: >
+      sh -c "mlflow db upgrade $$BACKEND_URI &&
+      mlflow server --backend-store-uri $$BACKEND_URI --artifacts-destination ${S3_ROOT} --host 0.0.0.0"
 
 volumes:
     dbdata:

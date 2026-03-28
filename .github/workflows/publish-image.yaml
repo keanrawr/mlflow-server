@@ -25,7 +25,7 @@ jobs:
       - name: Extract pinned MLflow version
         id: mlflow_version
         run: |
-          version="$(grep '^mlflow==' requirements.txt | cut -d= -f3)"
+          version="$(sed -n 's/^mlflow==\([^[:space:]#]*\).*$/\1/p' requirements.txt)"
           if [ -z "$version" ]; then
             echo "Unable to determine pinned MLflow version from requirements.txt"
             exit 1

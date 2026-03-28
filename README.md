@@ -17,6 +17,11 @@ services:
   db:
     restart: unless-stopped
     image: postgres:15
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     ports:
       - "${POSTGRES_PORT}:5432"
     environment:
@@ -24,22 +29,21 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
     volumes:
-      - dbdata:/var/lib/mysql
+      - dbdata:/var/lib/postgresql/data
   mlflow:
     restart: unless-stopped
-    build: keanrawr/mlflow
+    build: .
     image: mlflow_server
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "5000:5000"
     environment:
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - BACKEND_URI=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}/${POSTGRES_DB}
-    command: >
-      sh -c "mlflow db upgrade $$BACKEND_URI &&
-      mlflow server --backend-store-uri $$BACKEND_URI --artifacts-destination ${S3_ROOT} --host 0.0.0.0"
+      - BACKEND_URI=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - ARTIFACTS_DESTINATION=${S3_ROOT}
 
 volumes:
     dbdata:

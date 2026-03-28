@@ -1,20 +1,13 @@
 FROM python:3.11-slim-bullseye
 
-# Install python packages
-COPY requirements.txt /tmp/
-RUN pip install -r /tmp/requirements.txt
+COPY requirements.txt /tmp/requirements.txt
 
-# Copy the entrypoint script
-COPY entrypoint.sh /usr/local/bin/
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
-# Set environment variables
-ENV MLFLOW_HOST=0.0.0.0
-ENV MLFLOW_PORT=5000
-ENV MLFLOW_BACKEND_STORE_URI=""
-ENV MLFLOW_DEFAULT_ARTIFACT_ROOT=""
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+COPY wait-for-db.py /usr/local/bin/wait-for-db.py
 
-# Expose the port
-EXPOSE 5000
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-# Run the entrypoint script
-ENTRYPOINT ["entrypoint.sh"]
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["server"]

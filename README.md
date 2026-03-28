@@ -8,6 +8,8 @@ Very over-simplistic way to publish a docker image with the dependencies needed 
 
 This image is intended to be used through `docker compose`. I am going to deploy this using portainer in my homelab.
 
+Published image tags match the pinned MLflow version in `requirements.txt`. For example, if the repo pins `mlflow==3.10.1`, the GitHub release tag and Docker Hub tag should also be `3.10.1`.
+
 Example docker compose:
 
 ```yaml
@@ -32,8 +34,7 @@ services:
       - dbdata:/var/lib/postgresql/data
   mlflow:
     restart: unless-stopped
-    build: .
-    image: mlflow_server
+    image: keanrawr/mlflow-server:3.10.1
     depends_on:
       db:
         condition: service_healthy
@@ -49,3 +50,5 @@ volumes:
     dbdata:
 
 ```
+
+For local development, replace the `image:` line with `build: .` if you want Compose to build the image from the checked-out repo.

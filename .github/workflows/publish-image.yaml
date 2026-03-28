@@ -3,7 +3,6 @@ on:
   release:
     types: [published]
 
-
 jobs:
   build-publish:
     runs-on: ubuntu-latest
@@ -23,11 +22,34 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Extract pinned MLflow version
+        id: mlflow_version
+        run: |
+          version="$(grep '^mlflow==' requirements.txt | cut -d= -f3)"
+          if [ -z "$version" ]; then
+            echo "Unable to determine pinned MLflow version from requirements.txt"
+            exit 1
+          fi
+
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Validate release tag matches MLflow version
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          MLFLOW_VERSION: ${{ steps.mlflow_version.outputs.version }}
+        run: |
+          if [ "$RELEASE_TAG" != "$MLFLOW_VERSION" ]; then
+            echo "Release tag '$RELEASE_TAG' must match pinned MLflow version '$MLFLOW_VERSION'"
+            exit 1
+          fi
+
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: keanrawr/mlflow-server
+          tags: |
+            type=raw,value=${{ steps.mlflow_version.outputs.version }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5

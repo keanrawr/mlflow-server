@@ -13,8 +13,6 @@ Published image tags match the pinned MLflow version in `requirements.txt`. For 
 Example docker compose:
 
 ```yaml
-version: '3.7'
-
 services:
   db:
     restart: unless-stopped

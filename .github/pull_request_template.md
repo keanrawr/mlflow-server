@@ -10,7 +10,7 @@ Please include a summary of the change and which issue is fixed. Please also inc
 
 ## Related issues
 
-List any other changes that need to be made before the root issue is solved, ar any larger issue this PR is a part of.
+List any other changes that need to be made before the root issue is solved, or any larger issue this PR is a part of.
 
 # How Has This Been Tested?
 

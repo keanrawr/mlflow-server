@@ -1,0 +1,43 @@
+name: build-check
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Extract pinned MLflow version
+        id: mlflow_version
+        run: |
+          version="$(sed -n 's/^mlflow==\([^[:space:]#]*\).*$/\1/p' requirements.txt)"
+          if [ -z "$version" ]; then
+            echo "Unable to determine pinned MLflow version from requirements.txt"
+            exit 1
+          fi
+
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "MLflow version: $version"
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: false
+          tags: keanrawr/mlflow-server:${{ steps.mlflow_version.outputs.version }}

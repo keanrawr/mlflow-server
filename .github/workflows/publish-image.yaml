@@ -50,6 +50,7 @@ jobs:
           images: keanrawr/mlflow-server
           tags: |
             type=raw,value=${{ steps.mlflow_version.outputs.version }}
+            type=raw,value=latest
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5

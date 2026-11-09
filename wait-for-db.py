@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
 import os
+import re
 import sys
 import time
 
 import psycopg2
+
+
+def to_libpq_uri(database_uri: str) -> str:
+    """Strip a SQLAlchemy driver suffix (e.g. postgresql+psycopg://) so libpq accepts it."""
+    return re.sub(r"^(postgres(?:ql)?)\+[^:]+://", r"\1://", database_uri)
 
 
 def main() -> int:
@@ -11,7 +17,7 @@ def main() -> int:
         print("usage: wait-for-db.py <database-uri>", file=sys.stderr)
         return 2
 
-    database_uri = sys.argv[1]
+    database_uri = to_libpq_uri(sys.argv[1])
     timeout_seconds = int(os.environ.get("DB_CONNECT_TIMEOUT", "60"))
     deadline = time.monotonic() + timeout_seconds
     attempt = 0

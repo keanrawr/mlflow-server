@@ -1,4 +1,4 @@
 mlflow==3.18.0
-boto3==1.43.125
+boto3==1.44.3
 psycopg[binary]==3.3.9
 psycopg2-binary==2.9.13
